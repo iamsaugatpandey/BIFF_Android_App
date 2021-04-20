@@ -11,4 +11,9 @@
     <string name="login_failed">"Login failed"</string>
     <string name="welcome_to_app">Welcome to Beloit International Film Festival!</string>
     <string name="biff_logo_fullname">BIFF fullname, black background</string>
+    <string name="dont_have_account">Don\'t have account</string>
+    <string name="login">Login</string>
+    <string name="sign_up">SignUp</string>
+    <string name="email">Email</string>
+    <string name="password">Password</string>
 </resources>

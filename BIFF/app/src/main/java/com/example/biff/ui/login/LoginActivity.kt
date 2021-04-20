@@ -1,35 +1,116 @@
 package com.example.biff.ui.login
-
-import android.app.Activity
-import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProvider
+import android.content.Intent
 import android.os.Bundle
-import androidx.annotation.StringRes
 import androidx.appcompat.app.AppCompatActivity
-import android.text.Editable
-import android.text.TextWatcher
-import android.view.View
-import android.view.inputmethod.EditorInfo
-import android.widget.Button
-import android.widget.EditText
-import android.widget.ProgressBar
+import android.util.Patterns
 import android.widget.Toast
-
+import com.google.firebase.auth.FirebaseUser
 import com.example.biff.R
+import com.google.firebase.auth.FirebaseAuth
+import kotlinx.android.synthetic.main.activity_login.*
 
 class LoginActivity : AppCompatActivity() {
+    //private lateinit var googleSignInClient: GoogleSignInClient
+    //private lateinit var loginViewModel: LoginViewModel
+    private lateinit var auth: FirebaseAuth
 
-    private lateinit var loginViewModel: LoginViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
         setContentView(R.layout.activity_login)
+        auth = FirebaseAuth.getInstance()
+
+        sign_up_button.setOnClickListener {
+            startActivity(Intent(this, SignUpActivity::class.java))
+            finish()
+        }
+
+        login.setOnClickListener {
+            doLogin()
+        }
+    }
+    /*
+    private fun forgotPassword(username: EditText) {
+        if (username.text.toString().isEmpty()) {
+            return
+        }
+
+        if (!Patterns.EMAIL_ADDRESS.matcher(username.text.toString()).matches()) {
+            return
+        }
+
+        auth.sendPasswordResetEmail(username.text.toString())
+            .addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    Toast.makeText(this, "Email sent.", Toast.LENGTH_SHORT).show()
+                }
+            }
+    }*/
+
+    private fun doLogin() {
+        if (tv_username.text.toString().isEmpty()) {
+            tv_username.error = "Please enter email"
+            tv_username.requestFocus()
+            return
+        }
+
+        if (!Patterns.EMAIL_ADDRESS.matcher(tv_username.text.toString()).matches()) {
+            tv_username.error = "Please enter valid email"
+            tv_username.requestFocus()
+            return
+        }
+
+        if (tv_password.text.toString().isEmpty()) {
+            tv_password.error = "Please enter password"
+            tv_password.requestFocus()
+            return
+        }
+
+        auth.signInWithEmailAndPassword(tv_username.text.toString(), tv_password.text.toString())
+            .addOnCompleteListener(this) { task ->
+                if (task.isSuccessful) {
+                    val user = auth.currentUser
+                    updateUI(user)
+                } else {
+                    Toast.makeText(
+                        baseContext, "Login failed.",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                    updateUI(null)
+                }
+            }
+    }
+
+    public override fun onStart() {
+        super.onStart()
+        val currentUser = auth.currentUser
+        updateUI(currentUser)
+    }
+
+    private fun updateUI(currentUser: FirebaseUser?) {
+        if(currentUser!=null){
+            if(currentUser.isEmailVerified) {
+                startActivity(Intent(this, DashboardActivity::class.java))
+                finish()
+            }else{
+                Toast.makeText(baseContext, "Please verify your credentials.",Toast.LENGTH_SHORT).show()
+            }
+        }else{
+            Toast.makeText(baseContext, "Login Failed.",Toast.LENGTH_SHORT).show()
+        }
+    }
+}
+/*
 
         val username = findViewById<EditText>(R.id.username)
         val password = findViewById<EditText>(R.id.password)
         val login = findViewById<Button>(R.id.login)
         val loading = findViewById<ProgressBar>(R.id.loading)
+        val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                .requestIdToken(getString(R.string.default_web_client_id))
+                .requestEmail()
+                .build()
+        googleSignInClient = GoogleSignIn.getClient(this, gso)
 
         loginViewModel = ViewModelProvider(this, LoginViewModelFactory())
                 .get(LoginViewModel::class.java)
@@ -96,7 +177,6 @@ class LoginActivity : AppCompatActivity() {
             }
         }
     }
-
     private fun updateUiWithUser(model: LoggedInUserView) {
         val welcome = getString(R.string.welcome)
         val displayName = model.displayName
@@ -127,3 +207,4 @@ fun EditText.afterTextChanged(afterTextChanged: (String) -> Unit) {
         override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {}
     })
 }
+ */
